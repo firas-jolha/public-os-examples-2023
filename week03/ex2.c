@@ -26,9 +26,9 @@ void showPerson(struct Person *person) {
 int main() {
     struct Person *friends[3];
 
-    friends[0] = createPerson("Sherif", 22, 35.0);
-    friends[1] = createPerson("Micheal", 35, 22.0);
-    friends[2] = createPerson("Firas", 22, 35.0);
+    friends[0] = createPerson("Sherif", 22, 170.0);
+    friends[1] = createPerson("Micheal", 23, 175.0);
+    friends[2] = createPerson("Firas", 24, 180.0);
 
     for (int i = 0; i < 3; i++) {
         printf("Friend %d:\n", i + 1);
