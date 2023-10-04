@@ -39,13 +39,15 @@ int main()
     // Create the withdrawal thread
     pthread_create(&thread1, NULL, withdrawal, NULL);
 
+    // ex 4: // Wait for both threads to finish
+    // pthread_join(thread1, NULL);
+
     // Create the deposit thread
     pthread_create(&thread2, NULL, deposit, NULL);
 
     sleep(0.5);
 
     // ex 4: // Wait for both threads to finish
-    // pthread_join(thread1, NULL);
     // pthread_join(thread2, NULL);
 
     // ex 3: Balance should stay the same as we did the same number
