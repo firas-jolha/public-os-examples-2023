@@ -22,13 +22,15 @@ int main(int argc, char *argv[])
         close(pipe_fd[1]); // Close the write end of the pipe in the child process
 
         char message[256];
-        int len;
+        char ch;
+        int i = 0;
 
-        // Read the message length from the pipe
-        read(pipe_fd[0], &len, sizeof(int));
-
-        // Read the message from the pipe
-        read(pipe_fd[0], message, len);
+        // Read the message char by char until there's a read error
+        while (read(pipe_fd[0], &ch, sizeof(char)) > 0 && i < sizeof(message) - 1)
+        {
+            message[i++] = ch;
+        }
+        message[i] = '\0'; // Null-terminate the message
 
         close(pipe_fd[0]); // Close the read end of the pipe in the child process
 
@@ -40,13 +42,16 @@ int main(int argc, char *argv[])
         close(pipe_fd[0]); // Close the read end of the pipe in the parent process
 
         char *message = argv[1];
-        int len = strlen(message);
 
-        // Send the message length to the child process
-        write(pipe_fd[1], &len, sizeof(int));
-
-        // Send the message to the child process
-        write(pipe_fd[1], message, len);
+        // Send the message char by char
+        for (int i = 0; i < strlen(message); i++)
+        {
+            if (write(pipe_fd[1], &message[i], sizeof(char)) == -1)
+            {
+                perror("write");
+                return 1;
+            }
+        }
 
         close(pipe_fd[1]); // Close the write end of the pipe in the parent process
     }
