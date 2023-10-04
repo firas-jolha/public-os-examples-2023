@@ -1,51 +1,54 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
 
-int main()
+int main(int argc, char *argv[])
 {
-    int pipe_fd[2];  // File descriptors for the pipe
-    pid_t child_pid; // Process ID of the child
+    if (argc != 2)
+    {
+        fprintf(stderr, "Usage: %s <message>\n", argv[0]);
+        return 1;
+    }
 
-    // Create a pipe
+    int pipe_fd[2];
     pipe(pipe_fd);
 
-    // Fork to create a child process
-    child_pid = fork();
+    pid_t pid = fork();
 
-    if (child_pid == 0)
+    if (pid == 0)
     {
-        // This code is executed by the child process
+        // Child process
+        close(pipe_fd[1]); // Close the write end of the pipe in the child process
 
-        // Close the read end of the pipe (not needed by child)
-        close(pipe_fd[0]);
+        char message[256];
+        int len;
 
-        // Input read from the command line by the child
-        char input[100];
-        printf("Child: Enter input: ");
-        fgets(input, sizeof(input), stdin);
+        // Read the message length from the pipe
+        read(pipe_fd[0], &len, sizeof(int));
 
-        // Write the input to the pipe
-        write(pipe_fd[1], input, sizeof(input));
+        // Read the message from the pipe
+        read(pipe_fd[0], message, len);
 
-        // Close the write end of the pipe
-        close(pipe_fd[1]);
+        close(pipe_fd[0]); // Close the read end of the pipe in the child process
+
+        printf("Child Process Received: %s\n", message);
     }
     else
     {
-        // This code is executed by the parent process
+        // Parent process
+        close(pipe_fd[0]); // Close the read end of the pipe in the parent process
 
-        // Close the write end of the pipe (not needed by parent)
-        close(pipe_fd[1]);
+        char *message = argv[1];
+        int len = strlen(message);
 
-        // Read data from the pipe and print it to stdout
-        char buffer[100];
-        read(pipe_fd[0], buffer, sizeof(buffer));
-        printf("Parent received from child: %s", buffer);
+        // Send the message length to the child process
+        write(pipe_fd[1], &len, sizeof(int));
 
-        // Close the read end of the pipe
-        close(pipe_fd[0]);
+        // Send the message to the child process
+        write(pipe_fd[1], message, len);
+
+        close(pipe_fd[1]); // Close the write end of the pipe in the parent process
     }
 
     return 0;
